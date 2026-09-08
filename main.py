@@ -21,7 +21,7 @@ import os
 import sys
 import cv2
 
-from src.utils import load_config, ensure_dir
+from src.utils import load_config, ensure_dir, build_database_url
 from src.face_detector import FaceDetector
 from src.face_recognizer import FaceRecognizer
 from src.face_database import FaceDatabase
@@ -49,7 +49,7 @@ class LAMSApp:
             cosine_threshold=self.config["recognition"]["cosine_threshold"],
         )
 
-        self.db = FaceDatabase(self.config["paths"]["database_path"])
+        self.db = FaceDatabase(build_database_url(self.config))
 
         # Register cameras from config into the DB (idempotent).
         gate = self.config["cameras"]["main_gate"]

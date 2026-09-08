@@ -32,17 +32,59 @@ cameras:
   workplaces:
     - camera_id: "OFFICE_ROOM_01"
       source: 0
+      # Optional: list expected employee_ids for this workspace so the
+      # daemon can log an explicit ABSENT row for anyone on the list who
+      # wasn't seen in a given screenshot. Leave empty/omit to just log
+      # PRESENT for whoever is recognized, with no absence checking.
+      roster: []
 
 paths:
   dataset_dir: "dataset"
-  database_path: "database/lams.db"
+  database_path: "database/lams.db"    # used only if database.url below is not set
   captured_images_dir: "outputs/captured_images"
 
+# Database connection. Leave `url` blank/absent to keep using the local
+# SQLite file at paths.database_path (zero setup, good for local testing).
+# Set `url` to point at a real server instead - one line, no code changes:
+#
+#   Postgres: "postgresql+psycopg2://lams_user:PASSWORD@localhost:5432/lams"
+#   MySQL:    "mysql+pymysql://lams_user:PASSWORD@localhost:3306/lams"
+#
+# See TESTING.md "Connecting to Postgres / any database" for the driver
+# install commands and how to create the DB/user.
+
+database:
+  url: "postgresql+psycopg2://lams_user:sufyan244@localhost:5432/lams"
+
+# All schedule times below are in this IANA timezone, regardless of what
+# timezone the server/VM itself is set to.
+timezone: "Asia/Karachi"
+
+# --- Main gate: continuous check-in / check-out daemon -----------------
+gate:
+  checkin_start: "08:00"     # camera goes "live" for check-in from this time
+  checkout_start: "17:00"    # from this time on, recognitions are check-outs
+                              # (stays active however late the last employee leaves -
+                              # there is no separate end time)
+  poll_interval_seconds: 1.0 # how often to grab+process a frame (throttled,
+                              # so a lingering face doesn't spam the DB/CPU)
+  cooldown_seconds: 120      # ignore repeat recognitions of the same
+                              # employee within this many seconds
+
+# --- Workplace cameras: random screenshot scheduler ---------------------
 presence:
-  samples_per_run: 5
-  working_hours:
-    start: "08:00"
-    end: "17:00"
+  # One screenshot is scheduled per window per camera per day (5 windows =
+  # 5 screenshots/day, as requested). Leave a gap in the list where lunch
+  # should be - that's how the 1-2pm "no screenshots" rule is expressed.
+  windows:
+    - {start: "09:00", end: "10:30"}
+    - {start: "10:30", end: "12:00"}
+    - {start: "12:00", end: "13:00"}
+    # 13:00-14:00 = lunch, intentionally no window here
+    - {start: "14:00", end: "15:30"}
+    - {start: "15:30", end: "17:00"}
+  min_gap_minutes: 40   # minimum spacing enforced between consecutive shots
+  samples_per_run: 5    # kept for backward-compat with the interactive CLI
 
 enrollment:
-  images_per_employee: 5
+  images_per_employee: 8   # more angles/lighting = better real-camera accuracy

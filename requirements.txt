@@ -2,3 +2,9 @@ opencv-contrib-python==4.10.0.84
 numpy>=1.24,<2.0
 PyYAML>=6.0
 requests>=2.31
+tzdata>=2024.1
+sqlalchemy>=2.0
+
+# Only needed if you set database.url in config.yaml to a real server
+# instead of the default local SQLite file. Uncomment whichever you use:
+psycopg2-binary>=2.9   # Postgres

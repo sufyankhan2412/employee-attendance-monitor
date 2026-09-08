@@ -71,7 +71,8 @@ class AttendanceService:
             return "CHECK_IN"
         return "CHECK_OUT"
 
-    def record_event(self, frame, employee_id: str, score: float, event_type: str = None):
+    def record_event(self, frame, employee_id: str, score: float, event_type: str = None,
+                      event_time: str = None):
         """
         Persist an attendance event (CHECK_IN or CHECK_OUT): save the
         captured frame to disk and insert a row into attendance_events
@@ -79,6 +80,13 @@ class AttendanceService:
 
         If event_type is not given, it's auto-determined per employee/day
         via determine_event_type().
+
+        event_time: pass an explicit 'YYYY-MM-DD HH:MM:SS' string (e.g.
+        from utils.now_str_tz('Asia/Karachi')) when calling this from a
+        daemon, so the stored time is correct regardless of the server's
+        own OS timezone. Left as None for the interactive CLI, which is
+        fine as long as you're testing on a machine already set to
+        Pakistan time.
         """
         if event_type is None:
             event_type = self.determine_event_type(employee_id)
@@ -94,6 +102,7 @@ class AttendanceService:
             event_type=event_type,
             recognition_score=score,
             image_path=image_path,
+            event_time=event_time,
         )
         return event_type, image_path
 
