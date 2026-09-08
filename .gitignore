@@ -1,0 +1,9 @@
+venv/
+__pycache__/
+*.pyc
+models/*.onnx
+database/*.db
+outputs/captured_images/*.jpg
+!outputs/captured_images/.gitkeep
+dataset/*/
+!dataset/README.txt

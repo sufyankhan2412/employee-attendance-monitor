@@ -1,0 +1,48 @@
+# =========================================================
+# LAMS Face Recognition System - Configuration
+# =========================================================
+# Edit this file to point at your real CCTV streams later.
+# For local testing, source: 0 means "use my laptop webcam".
+
+models:
+  detector_path: "models/face_detection_yunet_2023mar.onnx"
+  recognizer_path: "models/face_recognition_sface_2021dec.onnx"
+
+detection:
+  score_threshold: 0.6      # minimum confidence to accept a detected face
+  nms_threshold: 0.3
+  top_k: 5000
+  input_size: [320, 320]    # YuNet re-sizes internally per-frame; this is just a default
+
+recognition:
+  # Cosine similarity threshold, as specified in the technical document (section 15).
+  # similarity >= threshold  -> match
+  # similarity <  threshold  -> UNKNOWN
+  # NOTE: this is the *initial development* threshold. Re-tune it once you have
+  # real enrollment photos and real CCTV footage (see README "Tuning the threshold").
+  cosine_threshold: 0.363
+
+# Cameras. For local laptop testing both point at source: 0 (your webcam).
+# Replace "source" with an RTSP/HTTP URL string when you connect real CCTV.
+cameras:
+  main_gate:
+    camera_id: "MAIN_GATE_01"
+    source: 0
+
+  workplaces:
+    - camera_id: "OFFICE_ROOM_01"
+      source: 0
+
+paths:
+  dataset_dir: "dataset"
+  database_path: "database/lams.db"
+  captured_images_dir: "outputs/captured_images"
+
+presence:
+  samples_per_run: 5
+  working_hours:
+    start: "08:00"
+    end: "17:00"
+
+enrollment:
+  images_per_employee: 5
